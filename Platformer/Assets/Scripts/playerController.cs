@@ -5,8 +5,15 @@ using UnityEngine;
 public class playerController : MonoBehaviour {
 
     //movement variables
-
     public float maxSpeed;
+
+    //jumping variables
+    bool grounded = false;
+    float groundCheckRadius = 0.2f;
+    public LayerMask groundLayer;
+    public Transform groundCheck;
+    public float jumpHeight;
+
 
     Rigidbody2D myRB;
     Animator myAnim;
@@ -21,9 +28,28 @@ public class playerController : MonoBehaviour {
 
 
 	}
-	
-	// Update is called once per frame
-	void FixedUpdate () {
+
+    // Update is called once per frame
+    void Update()
+    {
+        if(grounded && Input.GetAxis("Jump")>0)
+        {
+            grounded = false;
+            myAnim.SetBool("isGrounded", grounded);
+            myRB.AddForce(new Vector2(0, jumpHeight));
+        }
+    }
+
+
+
+    void FixedUpdate () {
+         
+        //check if we are grounded if no, then we are falling
+        grounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        myAnim.SetBool("isGrounded", grounded);
+
+        myAnim.SetFloat("verticalSpeed", myRB.velocity.y);
+
         float move = Input.GetAxis("Horizontal");
         myAnim.SetFloat("speed", Mathf.Abs(move));
 
@@ -42,6 +68,8 @@ public class playerController : MonoBehaviour {
 
     void flip()
     {
+
+
         facingRight = !facingRight;
         Vector3 theScale = transform.localScale;
         theScale.x *= -1;
